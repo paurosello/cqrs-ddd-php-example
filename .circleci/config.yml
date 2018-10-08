@@ -5,7 +5,7 @@ jobs:
       - image: circleci/php:7.1-browsers
     steps:
       - checkout
-      - run: sudo apt-get install automake libtool
+      - run: sudo apt-get install automake libtool cmake
       - run: git clone https://github.com/alanxz/rabbitmq-c
       - run: cd rabbitmq-c && git fetch --tags && git checkout tags/v0.9.0
       - run: cd rabbitmq-c && git submodule init && git submodule update && autoreconf -i && ./configure && make && sudo make install
