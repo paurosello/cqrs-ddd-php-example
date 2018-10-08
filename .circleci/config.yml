@@ -2,7 +2,7 @@ version: 2
 jobs:
   dependencies:
     docker:
-      - image: circleci/php:7.1.6
+      - image: circleci/php:7.1-browsers
     steps:
       - checkout
       - run: git clone https://github.com/alanxz/rabbitmq-c
@@ -14,17 +14,20 @@ jobs:
       - run: rm /opt/circleci/php/$(phpenv global)/etc/conf.d/xdebug.ini
       - run: cp etc/circleci/php.ini /opt/circleci/php/$(phpenv global)/etc/conf.d/
       - save_cache:
-          key: vendor-cache
           paths:
-            - vendor
+            - ./vendor
+          key: dependencies-{{ checksum "composer.json" }}
 
   test:
     docker:
-      - image: circleci/php:7.1.6
+      - image: circleci/php:7.1-browsers
     steps:
       - checkout
       - restore_cache:
-          key: vendor-cache
+          keys:
+          - dependencies-{{ checksum "composer.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - dependencies-
       - run: composer install --optimize-autoloader --prefer-dist
       - run: applications/api/bin/console cache:warmup --env=prod
       - run: ./vendor/bin/phpstan analyse -l 7 -c etc/phpstan/phpstan.neon applications/api/src applications/codely/src
